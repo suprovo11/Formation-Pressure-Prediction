@@ -81,7 +81,7 @@ The workflow uses a fixed random seed (`42`) and defines the principal configura
 If you use this implementation or the underlying formation-pressure prediction methodology in academic work, please cite the original study:
 
 ```bibtex
-@article{arifeen2024,
+@article{formation pressure prediction,
   author  = {Salman Shakib Suprova},
   year    = {2026},
   title   = {Formation Pressure Prediction},
