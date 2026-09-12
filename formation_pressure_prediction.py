@@ -1,56 +1,10 @@
 """
-================================================================================
-DataDRILL  -  Scenario 1:  FORMATION PRESSURE PREDICTION  (Regression)
-                              -- LEAKAGE-FIXED VERSION --
-================================================================================
 Dataset : Formation_Pressure_Prediction.csv  (2774 rows x 28 cols)
 Target  : FPress  (Formation Pressure, psi)
 
 The original paper (Arifeen et al., 2024) validated this task with
 *Principal Component Regression (PCR)* and reported  R2 = 0.78,  RPD = 0.922.
 
---------------------------------------------------------------------------------
-WHAT CHANGED vs. the first version, and why
---------------------------------------------------------------------------------
-1) FEATURE SELECTION LEAKAGE FIXED
-   Before: Pearson correlation with the target was computed on the FULL
-   dataset before splitting, so the test set influenced which features were
-   kept. Now: correlation is computed ONLY on the training fold; the same
-   feature list is then applied to the test fold.
-
-2) SMOOTHING LEAKAGE FIXED
-   Before: Savitzky-Golay smoothing (a moving-window filter) was applied to
-   the whole array before splitting, so a training row could be smoothed
-   using values from a row that later became a test row (and vice versa).
-   Now: smoothing is applied separately within each fold, using only that
-   fold's own rows.
-
-3) RANDOM SPLIT -> DEPTH-ORDERED (BLOCKED) SPLIT
-   Before: a random shuffle-split was used on what is really a depth/time
-   -ordered drilling log. Adjacent depths are highly autocorrelated, so a
-   random split lets the model "interpolate" between near-duplicate
-   neighboring rows instead of extrapolating to unseen formation
-   conditions -- this inflates R2/RPD in a way that will NOT replicate on a
-   new well. Now: the data is sorted by depth (WellDepth/BTBR) and split
-   into contiguous blocks (first 80% of depth -> train, last 20% -> test),
-   which is a much more honest test of generalization.
-
-4) SINGLE SPLIT -> BLOCKED CROSS-VALIDATION
-   Before: one random split, one number. Now: TimeSeriesSplit-style blocked
-   CV (default 5 folds) reports mean +/- std for every model, so you can see
-   how much the "accuracy" actually varies across different test windows.
-
-5) TRAIN vs. TEST METRICS SIDE BY SIDE
-   A model that fits training data much better than test data is a model
-   that's overfitting. We now print both explicitly for every model/fold.
-
-6) NAIVE BASELINE ADDED
-   A "persistence" baseline (predict the previous row's FPress) and a
-   "mean" baseline (predict the training mean) are run through the exact
-   same pipeline/splits. If these trivial baselines already score high, it
-   tells you that autocorrelation -- not model sophistication -- explains
-   most of the apparent accuracy.
-================================================================================
 """
 
 import os
